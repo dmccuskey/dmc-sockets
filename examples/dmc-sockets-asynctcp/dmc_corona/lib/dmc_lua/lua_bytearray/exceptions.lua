@@ -1,14 +1,14 @@
 --====================================================================--
--- lua_error.lua
+-- dmc_lua/lua_bytearray/exceptions.lua
 --
--- Documentation: http://docs.davidmccuskey.com/display/docs/lua_error.lua
+-- Documentation: http://docs.davidmccuskey.com/
 --====================================================================--
 
 --[[
 
 The MIT License (MIT)
 
-Copyright (C) 2014 David McCuskey. All Rights Reserved.
+Copyright (c) 2014-2015 David McCuskey
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -33,92 +33,55 @@ SOFTWARE.
 
 
 --====================================================================--
--- DMC Lua Library : Lua Error
+--== DMC Lua Library : Byte Array Errors
 --====================================================================--
 
 
 -- Semantic Versioning Specification: http://semver.org/
 
-local VERSION = "0.1.1"
+local VERSION = "0.2.0"
+
 
 
 --====================================================================--
--- Imports
+--== Imports
+
 
 local Objects = require 'lua_objects'
+local Error = require 'lua_error'
+
 
 
 --====================================================================--
--- Setup, Constants
+--== Setup, Constants
+
 
 -- setup some aliases to make code cleaner
-local inheritsFrom = Objects.inheritsFrom
-local ObjectBase = Objects.ObjectBase
-
-
---====================================================================--
--- Support Functions
-
--- based on https://gist.github.com/cwarden/1207556
-
-local function try( funcs )
-	local try_f, catch_f, finally_f = funcs[1], funcs[2], funcs[3]
-	local status, result = pcall(try_f)
-	if not status and catch_f then
-		catch_f(result)
-	end
-	if finally_f then finally_f() end
-	return result
-end
-
-local function catch(f)
-	return f[1]
-end
-
-local function finally(f)
-	return f[1]
-end
+local newClass = Objects.newClass
 
 
 
 --====================================================================--
--- Error Base Class
+--== Buffer Error Class
 --====================================================================--
 
 
-local Error = inheritsFrom( ObjectBase )
-Error.NAME = "Error Instance"
+--[[
+	This exception is triggered when there isn't enough data available
+	for a read, eg, 2 bytes available and requesting 10 bytes.
+--]]
 
-function Error:_init( params )
-	-- print( "Error:_init" )
-	params = params or {}
-	self:superCall( "_init", params )
-	--==--
+local BufferError = newClass( Error )
+BufferError.NAME = "Buffer Error"
 
-	if self.is_intermediate then return end
-
-	self.prefix = params.prefix or "ERROR: "
-	self.message = params.message or "there was an error"
-	self.traceback = debug.traceback()
-
-	local mt = getmetatable( self )
-	mt.__tostring = function(e)
-		return table.concat({self.prefix,e.message,"\n",e.traceback})
-	end
-
-end
 
 
 
 --====================================================================--
---== Error API Setup
+--== Error Facade
 --====================================================================--
 
--- globals
-_G.try = try
-_G.catch = catch
-_G.finally = finally
 
-
-
-return Error
+return {
+	BufferError=BufferError
+}
