@@ -1,16 +1,14 @@
 --====================================================================--
 -- dmc_sockets/async_tcp.lua
 --
---
--- by David McCuskey
--- Documentation: http://docs.davidmccuskey.com/display/docs/dmc_sockets.lua
+-- Documentation: http://docs.davidmccuskey.com/
 --====================================================================--
 
 --[[
 
 The MIT License (MIT)
 
-Copyright (c) 2014 David McCuskey
+Copyright (c) 2014-2015 David McCuskey
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +33,9 @@ SOFTWARE.
 
 
 --====================================================================--
--- DMC Corona Library : Async TCP
+--== DMC Corona Library : Async TCP
 --====================================================================--
+
 
 -- Semantic Versioning Specification: http://semver.org/
 
@@ -103,12 +102,14 @@ function ATCPSocket:__init__( params )
 
 end
 
---== END: Setup DMC Objects
---====================================================================--
+-- END: Setup DMC Objects
+--======================================================--
+
 
 
 --====================================================================--
 --== Public Methods
+
 
 function ATCPSocket.__getters:timeout( value )
 	self._timeout = value
@@ -394,6 +395,7 @@ function ATCPSocket:receiveUntilNewline( callback )
 end
 
 
+
 --====================================================================--
 --== Private Methods
 
@@ -478,8 +480,10 @@ function ATCPSocket:_processCoroutineQueue()
 end
 
 
+
 --====================================================================--
 --== Event Handlers
+
 
 function ATCPSocket:_socketsEvent_handler( event )
 	-- print( 'ATCPSocket:_socketsEvent_handler', event )

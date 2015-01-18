@@ -1,16 +1,14 @@
 --====================================================================--
 -- dmc_sockets/tcp.lua
 --
---
--- by David McCuskey
--- Documentation: http://docs.davidmccuskey.com/display/docs/dmc_sockets.lua
+-- Documentation: http://docs.davidmccuskey.com/
 --====================================================================--
 
 --[[
 
 The MIT License (MIT)
 
-Copyright (c) 2014 David McCuskey
+Copyright (c) 2014-2015 David McCuskey
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +33,7 @@ SOFTWARE.
 
 
 --====================================================================--
--- DMC Corona Library : TCP
+--== DMC Corona Library : TCP
 --====================================================================--
 
 
@@ -69,7 +67,7 @@ local LOCAL_DEBUG = false
 
 
 --====================================================================--
--- TCP Socket Class
+--== TCP Socket Class
 --====================================================================--
 
 
@@ -148,6 +146,7 @@ end
 
 --====================================================================--
 --== Public Methods
+
 
 function TCPSocket.__getters:status()
 	return self._status
@@ -302,8 +301,10 @@ function TCPSocket:close()
 end
 
 
+
 --====================================================================--
 --== Private Methods
+
 
 function TCPSocket:_createSocket( params )
 	-- print( 'TCPSocket:_createSocket' )
@@ -417,8 +418,10 @@ function TCPSocket:_writeStatus( status )
 end
 
 
+
 --====================================================================--
 --== Event Handlers
+
 
 -- none
 

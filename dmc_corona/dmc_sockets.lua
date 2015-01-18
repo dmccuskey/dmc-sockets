@@ -1,16 +1,14 @@
 --====================================================================--
--- dmc_sockets.lua
+-- dmc_corona/dmc_sockets.lua
 --
---
--- by David McCuskey
--- Documentation: http://docs.davidmccuskey.com/display/docs/dmc_sockets.lua
+-- Documentation: http://docs.davidmccuskey.com/
 --====================================================================--
 
 --[[
 
 The MIT License (MIT)
 
-Copyright (c) 2014 David McCuskey
+Copyright (c) 2014-2015 David McCuskey
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +33,9 @@ SOFTWARE.
 
 
 --====================================================================--
--- DMC Corona Library : DMC Sockets
+--== DMC Corona Library : DMC Sockets
 --====================================================================--
+
 
 -- Semantic Versioning Specification: http://semver.org/
 
@@ -45,12 +44,14 @@ local VERSION = "0.1.0"
 
 
 --====================================================================--
--- DMC Corona Library Config
+--== DMC Corona Library Config
 --====================================================================--
 
 
+
 --====================================================================--
--- Support Functions
+--== Support Functions
+
 
 local Utils = {} -- make copying from dmc_utils easier
 
@@ -80,32 +81,35 @@ function Utils.extend( fromTable, toTable )
 end
 
 
+
 --====================================================================--
--- Configuration
+--== Configuration
 
-local dmc_lib_data, dmc_lib_info
 
--- boot dmc_library with boot script or
+local dmc_lib_data
+
+-- boot dmc_corona with boot script or
 -- setup basic defaults if it doesn't exist
 --
-if false == pcall( function() require( "dmc_corona_boot" ) end ) then
+if false == pcall( function() require( 'dmc_corona_boot' ) end ) then
 	_G.__dmc_corona = {
 		dmc_corona={},
 	}
 end
 
 dmc_lib_data = _G.__dmc_corona
-dmc_lib_info = dmc_lib_data.dmc_library
 
 
 
 --====================================================================--
--- DMC Sockets
+--== DMC Sockets
 --====================================================================--
 
 
+
 --====================================================================--
--- Configuration
+--== Configuration
+
 
 dmc_lib_data.dmc_sockets = dmc_lib_data.dmc_sockets or {}
 
@@ -147,7 +151,7 @@ local Singleton = nil
 
 
 --====================================================================--
--- Sockets Class
+--== Sockets Class
 --====================================================================--
 
 
@@ -236,8 +240,10 @@ end
 --====================================================================--
 
 
+
 --====================================================================--
 --== Public Methods
+
 
 function Sockets.__setters:throttle( value )
 	-- print( 'Sockets.__setters:throttle', value )
@@ -309,8 +315,10 @@ function Sockets:create( s_type, params )
 end
 
 
+
 --====================================================================--
 --== Private Methods
+
 
 -- getter/setter: activate enterFrame for socket check
 --
@@ -451,8 +459,10 @@ function Sockets:_checkConnections()
 end
 
 
+
 --====================================================================--
 --== Event Handlers
+
 
 function Sockets:_createSocketCheckHandler( value )
 	-- print("Sockets:_createSocketCheckHandler", value )
@@ -475,6 +485,6 @@ end
 --====================================================================--
 
 
-local Singleton = Sockets:new()
+Singleton = Sockets:new()
 
 return Singleton
