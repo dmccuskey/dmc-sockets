@@ -17,7 +17,8 @@ module_config = {
 		],
 		"requires": [
 			"DMC-Lua-Library",
-			"dmc-objects"
+			"dmc-objects",
+			"dmc-utils"
 		]
 	},
 	"examples": {
