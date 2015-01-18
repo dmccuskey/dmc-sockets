@@ -43,10 +43,12 @@ SOFTWARE.
 local VERSION = "0.2.0"
 
 
---====================================================================--
--- Imports
 
-local Objects = require 'lua_objects'
+--====================================================================--
+--== Imports
+
+
+local Objects = require 'dmc_objects'
 local socket = require 'socket'
 local tcp_socket = require 'dmc_sockets.tcp'
 
@@ -55,11 +57,13 @@ local ssl = require 'plugin_luasec_ssl'
 -- require("ssl")
 
 
+
 --====================================================================--
--- Setup, Constants
+--== Setup, Constants
+
 
 -- setup some aliases to make code cleaner
-local inheritsFrom = Objects.inheritsFrom
+local newClass = Objects.newClass
 
 local tconcat = table.concat
 local tinsert = table.insert
@@ -74,17 +78,16 @@ local LOCAL_DEBUG = false
 --====================================================================--
 
 
-local ATCPSocket = inheritsFrom( tcp_socket )
-ATCPSocket.NAME = "Async TCP Socket Class"
+local ATCPSocket = newClass( tcp_socket, { name="Async TCP Socket" } )
 
 
---====================================================================--
---== Start: Setup DMC Objects
+--======================================================--
+-- Start: Setup DMC Objects
 
-function ATCPSocket:_init( params )
-	-- print( "ATCPSocket:_init" )
+function ATCPSocket:__init__( params )
+	-- print( "ATCPSocket:__init__" )
 	params = params or {}
-	self:superCall( "_init", params )
+	self:superCall( '__init__', params )
 	--==--
 
 	--== Create Properties ==--

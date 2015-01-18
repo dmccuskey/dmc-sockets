@@ -44,19 +44,22 @@ SOFTWARE.
 local VERSION = "1.1.0"
 
 
---====================================================================--
--- Imports
 
-local Objects = require 'lua_objects'
+--====================================================================--
+--== Imports
+
+local Objects = require 'dmc_objects'
 local socket = require 'socket'
-local Utils = require 'lua_utils'
+local Utils = require 'dmc_utils'
+
 
 
 --====================================================================--
--- Setup, Constants
+--== Setup, Constants
+
 
 -- setup some aliases to make code cleaner
-local inheritsFrom = Objects.inheritsFrom
+local newClass = Objects.newClass
 local ObjectBase = Objects.ObjectBase
 
 local tconcat = table.concat
@@ -70,8 +73,7 @@ local LOCAL_DEBUG = false
 --====================================================================--
 
 
-local TCPSocket = inheritsFrom( ObjectBase )
-TCPSocket.NAME = "TCP Socket"
+local TCPSocket = newClass( ObjectBase, { name="TCP Socket" } )
 
 --== Class Constants
 
@@ -99,18 +101,18 @@ TCPSocket.READ = 'read_event'
 TCPSocket.WRITE = 'write_event'
 
 
---====================================================================--
---== Start: Setup DMC Objects
+--======================================================--
+-- Start: Setup DMC Objects
 
-function TCPSocket:_init( params )
-	-- print( "TCPSocket:_init" )
+function TCPSocket:__init__( params )
+	-- print( "TCPSocket:__init__" )
 	params = params or {}
-	self:superCall( "_init", params )
+	self:superCall( '__init__', params )
 	--==--
 
-	if not self.is_intermediate then
-		assert( params.master, "TCP Socket requires Master")
-	end
+	if self.is_class then return end
+
+	assert( params.master, "TCP Socket requires Master")
 
 	--== Create Properties ==--
 
@@ -130,17 +132,18 @@ function TCPSocket:_init( params )
 end
 
 
-function TCPSocket:_undoInitComplete()
-	-- print( "TCPSocket:_undoInitComplete" )
+function TCPSocket:__undoInitComplete__()
+	-- print( "TCPSocket:__undoInitComplete__" )
 
 	self:_removeSocket()
 
 	--==--
-	self:superCall( "_undoInitComplete" )
+	self:superCall( '__undoInitComplete__' )
 end
 
---== END: Setup DMC Objects
---====================================================================--
+-- END: Setup DMC Objects
+--======================================================--
+
 
 
 --====================================================================--

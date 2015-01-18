@@ -118,10 +118,13 @@ local DMC_SOCKETS_DEFAULTS = {
 local dmc_sockets_data = Utils.extend( dmc_lib_data.dmc_sockets, DMC_SOCKETS_DEFAULTS )
 
 
---====================================================================--
--- Imports
 
-local Objects = require 'lua_objects'
+--====================================================================--
+--== Imports
+
+
+
+local Objects = require 'dmc_objects'
 local Utils = require 'lua_utils'
 
 local socket = require 'socket'
@@ -130,11 +133,13 @@ local tcp_socket = require 'dmc_sockets.tcp'
 local atcp_socket = require 'dmc_sockets.async_tcp'
 
 
+
 --====================================================================--
--- Setup, Constants
+--== Setup, Constants
+
 
 -- setup some aliases to make code cleaner
-local inheritsFrom = Objects.inheritsFrom
+local newClass = Objects.newClass
 local ObjectBase = Objects.ObjectBase
 
 local Singleton = nil
@@ -146,12 +151,11 @@ local Singleton = nil
 --====================================================================--
 
 
-local Sockets = inheritsFrom( ObjectBase )
-Sockets.NAME = "Sockets Instance"
-
-Sockets.VERSION = VERSION
+local Sockets = newClass( ObjectBase, { name="DMC Socket" } )
 
 --== Class Constants
+
+Sockets.__version = VERSION
 
 Sockets.NO_BLOCK = 0
 Sockets.TCP = 'tcp'
@@ -166,13 +170,13 @@ Sockets.HIGH = math.floor( 1000/1 )  -- ie, 1 FPS
 Sockets.DEFAULT = Sockets.MEDIUM
 
 
---====================================================================--
+--======================================================--
 --== Start: Setup DMC Objects
 
-function Sockets:_init( params )
-	-- print( "Sockets:_init" )
+function Sockets:__init__( params )
+	-- print( "Sockets:__init__" )
 	params = params or {}
-	self:superCall( "_init", params )
+	self:superCall( '__init__', params )
 	--==--
 
 	--== Create Properties ==--
@@ -192,20 +196,20 @@ function Sockets:_init( params )
 	-- none
 
 end
-function Sockets:_undoInit()
-	-- print( "Sockets:_undoInit" )
+function Sockets:__undoInit__()
+	-- print( "Sockets:__undoInit__" )
 
 	self._sockets = nil
 	self._raw_socks = nil
 	self._raw_socks_list = nil
 
 	--==--
-	self:superCall( "_undoInit" )
+	self:superCall( '__undoInit__' )
 end
 
-function Sockets:_initComplete()
-	-- print( "Sockets:_initComplete" )
-	self:superCall( "_initComplete" )
+function Sockets:__initComplete__()
+	-- print( "Sockets:__initComplete__" )
+	self:superCall( '__initComplete__' )
 	--==--
 
 	-- initialize using setters
@@ -219,16 +223,16 @@ function Sockets:_initComplete()
 	end
 
 end
-function Sockets:_undoInitComplete()
-	-- print( "Sockets:_undoInitComplete" )
+function Sockets:__undoInitComplete__()
+	-- print( "Sockets:__undoInitComplete__" )
 
 	self:_removeSockets()
 
 	--==--
-	self:superCall( "_undoInitComplete" )
+	self:superCall( '__undoInitComplete__' )
 end
 
---== END: Setup DMC Objects
+-- END: Setup DMC Objects
 --====================================================================--
 
 
