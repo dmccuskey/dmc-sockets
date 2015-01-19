@@ -86,7 +86,7 @@ end
 --== Configuration
 
 
-local dmc_lib_data, dmc_lib_info
+local dmc_lib_data
 
 -- boot dmc_corona with boot script or
 -- setup basic defaults if it doesn't exist
@@ -98,7 +98,6 @@ if false == pcall( function() require( 'dmc_corona_boot' ) end ) then
 end
 
 dmc_lib_data = _G.__dmc_corona
-dmc_lib_info = dmc_lib_data.dmc_corona
 
 
 

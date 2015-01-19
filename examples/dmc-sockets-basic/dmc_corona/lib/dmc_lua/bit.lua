@@ -1,7 +1,7 @@
 --====================================================================--
--- dmc_lua/json.lua
+-- dmc_lua/bit.lua
 --
--- consistent method which which to load json on various systems
+-- a consistent method to load Lua BitOp on various systems
 --
 -- Documentation: http://docs.davidmccuskey.com/
 --====================================================================--
@@ -36,13 +36,13 @@ SOFTWARE.
 
 
 --====================================================================--
---== DMC Lua Library: JSON Shim
+--== DMC Lua Library: Bitop Shim
 --====================================================================--
 
 
 -- Semantic Versioning Specification: http://semver.org/
 
-local VERSION = "0.2.0"
+local VERSION = "0.1.0"
 
 
 
@@ -50,16 +50,17 @@ local VERSION = "0.2.0"
 --== Setup, Constants
 
 
--- these are some popular json modules
-local JSON_LIBS = { 'dkjson', 'cjson', 'json' }
+-- these are some popular bit op modules
+local BITOP_LIBS = { 'plugin.bit', 'lib.bit.numberlua' }
 
-local has_json, json
+local has_bitOp, BitOp
 
-for _, name in ipairs( JSON_LIBS ) do
-	has_json, json = pcall( require, name )
-	if has_json then break end
+for _, name in ipairs( BITOP_LIBS ) do
+	has_bitOp, BitOp = pcall( require, name )
+	if has_bitOp then break end
 end
 
-assert( has_json, "json module not found" )
+assert( has_bitOp, "Bit module not found" )
 
-return json
+return BitOp
+
