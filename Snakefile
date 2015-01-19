@@ -13,7 +13,8 @@ module_config = {
 		"files": [
 			"dmc_sockets.lua",
 			"dmc_sockets/tcp.lua",
-			"dmc_sockets/async_tcp.lua"
+			"dmc_sockets/async_tcp.lua",
+			"dmc_sockets/ssl_params.lua"
 		],
 		"requires": [
 			"DMC-Lua-Library",
