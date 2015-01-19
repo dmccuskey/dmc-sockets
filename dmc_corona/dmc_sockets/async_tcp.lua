@@ -129,9 +129,13 @@ end
 
 function ATCPSocket.__setters:ssl_params( value )
 	-- print( "ATCPSocket.__setters:ssl_params", value.NAME )
-	assert( type(value)=='table' )
+	assert( value==nil or type(value)=='table', "ATCPSocket.ssl_params incorrect value" )
+	--==--
 
-	if value.isa and value:isa( SSLParams ) then
+	if value == nil then
+		-- TODO: properly destroy
+		self._ssl_params = nil
+	elseif value.isa and value:isa( SSLParams ) then
 		self._ssl_params = value
 	else
 		self._ssl_params = SSLParams:new( value )
