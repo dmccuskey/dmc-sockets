@@ -137,7 +137,7 @@ end
 
 
 function ATCPSocket.__setters:ssl_params( value )
-	-- print( "ATCPSocket.__setters:ssl_params", value.NAME )
+	-- print( "ATCPSocket.__setters:ssl_params", value )
 	assert( value==nil or type(value)=='table', "ATCPSocket.ssl_params incorrect value" )
 	--==--
 
