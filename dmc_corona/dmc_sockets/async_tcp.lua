@@ -52,9 +52,7 @@ local socket = require 'socket'
 local TCPSocket = require 'dmc_sockets.tcp'
 local SSLParams = require 'dmc_sockets.ssl_params'
 
-local openssl = require 'plugin.openssl'
-local ssl = require 'plugin_luasec_ssl'
--- require("ssl")
+local ssl
 
 
 
@@ -74,7 +72,18 @@ local LOCAL_DEBUG = false
 
 
 --====================================================================--
--- Async TCP Socket Class
+--== Support Functions
+
+
+local function loadSSL()
+	local openssl = require 'plugin.openssl'
+	ssl = require 'plugin_luasec_ssl'
+end
+
+
+
+--====================================================================--
+--== Async TCP Socket Class
 --====================================================================--
 
 
@@ -156,6 +165,7 @@ function ATCPSocket.__setters:secure( is_secure )
 	elseif is_secure and self._ssl_params == nil then
 		self._ssl_params = SSLParams:new()
 	end
+	if is_secure and not ssl then loadSSL() end
 end
 
 function ATCPSocket.__getters:secure()
