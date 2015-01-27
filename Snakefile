@@ -17,6 +17,7 @@ module_config = {
 			"dmc_sockets/ssl_params.lua"
 		],
 		"requires": [
+			"dmc-corona-boot",
 			"DMC-Lua-Library",
 			"dmc-objects",
 			"dmc-utils"
@@ -36,10 +37,8 @@ module_config = {
 		]
 	},
 	"tests": {
-		"files": [
-		],
-		"requires": [
-		]
+		"files": [],
+		"requires": []
 	}
 }
 
