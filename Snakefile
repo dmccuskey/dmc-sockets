@@ -24,14 +24,14 @@ module_config = {
 		]
 	},
 	"examples": {
-		"dir": "examples",
+		"base_dir": "examples",
 		"apps": [
 			{
-				"dir": "dmc-sockets-asynctcp",
+				"exp_dir": "dmc-sockets-asynctcp",
 				"requires": []
 			},
 			{
-				"dir": "dmc-sockets-basic",
+				"exp_dir": "dmc-sockets-basic",
 				"requires": []
 			}
 		]
