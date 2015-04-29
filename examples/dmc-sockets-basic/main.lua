@@ -88,8 +88,9 @@ local function socketCallback( event )
 
 		-- read our data, using one of several receive types
 		repeat
-			local data = sock:receive( '*l' )
-			print( '>>', data )
+			local data = sock:receive( '*a' )
+			print( string.format( "Data block length: %s", #data ) )
+			-- print( '>>', data )
 		until data == ''
 
 		print( 'After read (buff len):', sock.buffer_size )

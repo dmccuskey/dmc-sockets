@@ -122,7 +122,7 @@ local function main()
 		else
 			print("Received Data:\n")
 			for i,v in ipairs( event.data ) do
-				print(i,v)
+				print( string.format( "Data block %s:  length: %s", i, #v ) )
 			end
 			print("\n")
 
