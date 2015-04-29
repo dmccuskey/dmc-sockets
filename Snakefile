@@ -19,8 +19,6 @@ module_config = {
 		"requires": [
 			"dmc-corona-boot",
 			"DMC-Lua-Library",
-			"dmc-objects",
-			"dmc-utils"
 		]
 	},
 	"examples": {
