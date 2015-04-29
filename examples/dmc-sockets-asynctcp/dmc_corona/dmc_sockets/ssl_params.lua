@@ -62,8 +62,7 @@ if checkModule then checkModule( Objects, '1.1.2' ) end
 --== Setup, Constants
 
 
--- setup some aliases to make code cleaner
-local newClass = Objects.newClass
+-- none
 
 
 

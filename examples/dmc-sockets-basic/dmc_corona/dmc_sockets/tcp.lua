@@ -46,9 +46,10 @@ local VERSION = "1.2.0"
 --====================================================================--
 --== Imports
 
-local Objects = require 'dmc_objects'
+
+local Objects = require 'lib.dmc_lua.lua_objects'
 local socket = require 'socket'
-local Utils = require 'dmc_utils'
+local Utils = require 'lib.dmc_lua.lua_utils'
 
 
 
@@ -56,11 +57,12 @@ local Utils = require 'dmc_utils'
 --== Setup, Constants
 
 
--- setup some aliases to make code cleaner
-local newClass = Objects.newClass
 local ObjectBase = Objects.ObjectBase
 
+local sfind = string.find
+local ssub = string.sub
 local tconcat = table.concat
+local type = type
 
 local LOCAL_DEBUG = false
 
@@ -100,7 +102,7 @@ TCPSocket.WRITE = 'write_event'
 
 
 --======================================================--
--- Start: Setup DMC Objects
+-- Start: Setup Lua Objects
 
 function TCPSocket:__init__( params )
 	-- print( "TCPSocket:__init__" )
@@ -139,7 +141,7 @@ function TCPSocket:__undoInitComplete__()
 	self:superCall( '__undoInitComplete__' )
 end
 
--- END: Setup DMC Objects
+-- END: Setup Lua Objects
 --======================================================--
 
 
@@ -166,7 +168,6 @@ function TCPSocket:reconnect( params )
 	-- print( 'TCPSocket:reconnect' )
 	params = params or {}
 	--==--
-
 	self:connect( self._host, self._port, params )
 end
 
@@ -250,20 +251,20 @@ function TCPSocket:receive( ... )
 		self._buffer = ""
 
 	elseif type( args ) == 'number' and #buffer >= args then
-		data = string.sub( buffer, 1, args )
-		self._buffer = string.sub( buffer, args+1 )
+		data = ssub( buffer, 1, args )
+		self._buffer = ssub( buffer, args+1 )
 
 	elseif type( args ) == 'string' and args == '*l' then
 		local ret = '\r\n'
 		local lret = #ret
-		local beg, _ = string.find( buffer, ret )
+		local beg, _ = sfind( buffer, ret )
 
 		if beg == 1 then
 			data = ""
-			self._buffer = string.sub( buffer, beg+lret )
+			self._buffer = ssub( buffer, beg+lret )
 		elseif beg then
-			data = string.sub( buffer, 1, beg )
-			self._buffer = string.sub( buffer, beg+lret )
+			data = ssub( buffer, 1, beg )
+			self._buffer = ssub( buffer, beg+lret )
 		end
 
 	end
