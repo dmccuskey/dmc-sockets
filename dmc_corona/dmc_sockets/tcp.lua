@@ -59,7 +59,10 @@ local Utils = require 'lib.dmc_lua.lua_utils'
 
 local ObjectBase = Objects.ObjectBase
 
+local sfind = string.find
+local ssub = string.sub
 local tconcat = table.concat
+local type = type
 
 local LOCAL_DEBUG = false
 
@@ -244,25 +247,25 @@ function TCPSocket:receive( ... )
 
 	local data
 
-	if type( args ) == 'string' and args == '*a' then
+	if type( args )=='string' and args == '*a' then
 		data = buffer
 		self._buffer = ""
 
-	elseif type( args ) == 'number' and #buffer >= args then
-		data = string.sub( buffer, 1, args )
-		self._buffer = string.sub( buffer, args+1 )
+	elseif type( args )=='number' and #buffer >= args then
+		data = ssub( buffer, 1, args )
+		self._buffer = ssub( buffer, args+1 )
 
-	elseif type( args ) == 'string' and args == '*l' then
+	elseif type( args )=='string' and args == '*l' then
 		local ret = '\r\n'
 		local lret = #ret
-		local beg, _ = string.find( buffer, ret )
+		local beg, _ = sfind( buffer, ret )
 
 		if beg == 1 then
 			data = ""
-			self._buffer = string.sub( buffer, beg+lret )
+			self._buffer = ssub( buffer, beg+lret )
 		elseif beg then
-			data = string.sub( buffer, 1, beg )
-			self._buffer = string.sub( buffer, beg+lret )
+			data = ssub( buffer, 1, beg )
+			self._buffer = ssub( buffer, beg+lret )
 		end
 
 	end
