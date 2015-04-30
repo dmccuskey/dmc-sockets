@@ -127,9 +127,9 @@ local dmc_sockets_data = Utils.extend( dmc_lib_data.dmc_sockets, DMC_SOCKETS_DEF
 --== Imports
 
 
-local Objects = require 'lib.dmc_lua.lua_objects'
+local Objects = require 'lua_objects'
 local socket = require 'socket'
-local Utils = require 'lib.dmc_lua.lua_utils'
+local Utils = require 'lua_utils'
 
 local TCPSocket = require 'dmc_sockets.tcp'
 local ATCPSocket = require 'dmc_sockets.async_tcp'
