@@ -39,7 +39,7 @@ SOFTWARE.
 
 -- Semantic Versioning Specification: http://semver.org/
 
-local VERSION = "1.2.0"
+local VERSION = "1.3.0"
 
 
 
@@ -59,10 +59,7 @@ local Utils = require 'lib.dmc_lua.lua_utils'
 
 local ObjectBase = Objects.ObjectBase
 
-local sfind = string.find
-local ssub = string.sub
 local tconcat = table.concat
-local type = type
 
 local LOCAL_DEBUG = false
 
@@ -168,6 +165,7 @@ function TCPSocket:reconnect( params )
 	-- print( 'TCPSocket:reconnect' )
 	params = params or {}
 	--==--
+
 	self:connect( self._host, self._port, params )
 end
 
@@ -251,20 +249,20 @@ function TCPSocket:receive( ... )
 		self._buffer = ""
 
 	elseif type( args ) == 'number' and #buffer >= args then
-		data = ssub( buffer, 1, args )
-		self._buffer = ssub( buffer, args+1 )
+		data = string.sub( buffer, 1, args )
+		self._buffer = string.sub( buffer, args+1 )
 
 	elseif type( args ) == 'string' and args == '*l' then
 		local ret = '\r\n'
 		local lret = #ret
-		local beg, _ = sfind( buffer, ret )
+		local beg, _ = string.find( buffer, ret )
 
 		if beg == 1 then
 			data = ""
-			self._buffer = ssub( buffer, beg+lret )
+			self._buffer = string.sub( buffer, beg+lret )
 		elseif beg then
-			data = ssub( buffer, 1, beg )
-			self._buffer = ssub( buffer, beg+lret )
+			data = string.sub( buffer, 1, beg )
+			self._buffer = string.sub( buffer, beg+lret )
 		end
 
 	end
