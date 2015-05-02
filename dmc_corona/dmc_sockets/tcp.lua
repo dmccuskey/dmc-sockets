@@ -204,6 +204,8 @@ function TCPSocket:connect( host, port, params )
 	if success then
 		self._status = TCPSocket.CONNECTED
 		self._socket:settimeout(0)
+		self._socket:setoption( 'keepalive', true )
+		self._socket:setoption( 'tcp-nodelay', true )
 
 		self._master:_connect( self )
 
@@ -321,6 +323,8 @@ function TCPSocket:_createSocket( params )
 	self._status = TCPSocket.NOT_CONNECTED
 
 	self._socket:settimeout( params.timeout )
+	self._socket:setoption( 'keepalive', true )
+	self._socket:setoption( 'tcp-nodelay', true )
 
 end
 
