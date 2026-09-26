@@ -52,7 +52,7 @@ Properties of `Sockets`, shared by all sockets. They can also be set in [`dmc_co
 | `Sockets.MEDIUM` | at most every 66 ms, about 15 times a second |
 | `Sockets.HIGH` | at most once a second |
 
-A number sets the interval in milliseconds. Fewer checks mean less work per frame, but data waits longer to be noticed: with `MEDIUM`, a round trip takes about 66 ms instead of one frame. The setting is shared by all sockets.
+A number sets the interval in milliseconds. Fewer checks mean less work per frame, but data waits longer to be noticed: with `MEDIUM`, a round trip takes about 66 ms instead of one frame. The setting is shared by all sockets. Why the default is `OFF`: [ADR 001](decisions/001-throttle-default-off.md).
 
 ### How Data Arrives
 

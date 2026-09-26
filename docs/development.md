@@ -1,6 +1,6 @@
 # Development
 
-How dmc-sockets is tested, how to rebuild the libraries it bundles, and where it could go next.
+How dmc-sockets is tested, how to rebuild the libraries it bundles, the decisions behind it, and where it could go next.
 
 ## Testing
 
@@ -42,6 +42,12 @@ snakemake --cores 1 --forceall build_all
 ```
 
 The copies come from the sibling checkouts as they are on disk, on whatever branch each has checked out. Libraries that bundle dmc-sockets (dmc-websockets, dmc-netstream, dmc-wamp, DMC-Corona-Library) need rebuilding after a change here.
+
+## Decisions
+
+Architecture decision records, in [decisions/](decisions/):
+
+- [ADR 001: Make `throttle` work, but default to `OFF`](decisions/001-throttle-default-off.md)
 
 ## Branches
 
