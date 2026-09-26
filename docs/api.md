@@ -14,7 +14,8 @@ local Sockets = require 'dmc_corona.dmc_sockets'
 | [Async TCP socket](#async-tcp-socket) | object | Callback-based socket: connect, send and receive without blocking (recommended) |
 | [TCP socket](#tcp-socket) | object | Event-based socket with a blocking connect and a read buffer |
 | [TLS settings](#tls-settings) | table | `ssl_params` for secure connections |
-| [Configuration](#configuration) | file | Options in `dmc_corona.cfg` |
+| [Sockets settings](#sockets-settings) | properties | `check_reads`, `check_writes`, `throttle` |
+| [Configuration](#configuration) | file | The same settings in `dmc_corona.cfg` |
 | [Known issues](#known-issues) | | Behavior that differs from what the API suggests |
 
 ## create()
@@ -31,6 +32,16 @@ local sock = Sockets:create( Sockets.TCP )                       -- plain TCP
 | `Sockets.TCP` | a [TCP socket](#tcp-socket) |
 
 Any other type raises an error. UDP is not implemented.
+
+## Sockets Settings
+
+Properties of `Sockets`, shared by all sockets. They can also be set in [`dmc_corona.cfg`](#configuration).
+
+| Property | Default | Description |
+|---|---|---|
+| `Sockets.check_reads` | `true` | Watch sockets for incoming data. Setting it to `false` stops all reads |
+| `Sockets.check_writes` | `false` | Watch sockets for write readiness (not used yet) |
+| `Sockets.throttle` | `Sockets.MEDIUM` | Meant to set how often sockets are checked; see [known issues](#known-issues) |
 
 ### How Data Arrives
 
@@ -105,7 +116,7 @@ Takes data from the socket's buffer and passes it to the callback as `event.data
 sock:receiveUntilNewline( function( event ) ... end )
 ```
 
-Collects lines until an empty line, as at the end of HTTP headers, then calls back with `event.data`, a list of the lines (the last one is `''`). Waits up to the socket's timeout; on timeout, the lines read so far go back into the buffer and `event.emsg` is `'timeout'`.
+Collects lines until an empty line, as at the end of HTTP headers, then calls back with `event.data`, a list of the lines (the last one is `''`; the others keep a trailing `\r`, see [known issues](#known-issues)). Waits up to the socket's timeout; on timeout, the lines read so far go back into the buffer and `event.emsg` is `'timeout'`.
 
 ### close()
 
@@ -121,7 +132,7 @@ The [TLS settings](#tls-settings) for a secure connection, as a table.
 
 ### Other Members
 
-Async sockets also have the TCP socket's [`status`](#status), [`buffer_size`](#buffer_size), [`clearBuffer()`](#clearbuffer), [`unreceive()`](#unreceive) and [`reconnect()`](#reconnect).
+Async sockets also have the TCP socket's [`status`](#status), [`buffer_size`](#buffer_size), [`clearBuffer()`](#clearbuffer), [`unreceive()`](#unreceive), [`getstats()`](#getstats) and [`reconnect()`](#reconnect).
 
 ## TCP Socket
 
@@ -172,6 +183,10 @@ Listen for `sock.EVENT`:
 
 `sock:unreceive( data )` puts `data` back at the front of the buffer, for when you read more than you could use.
 
+### getstats()
+
+Returns LuaSocket's `getstats()` for the connection: bytes received, bytes sent, and the socket's age in seconds.
+
 ### clearBuffer()
 
 Empties the read buffer.
@@ -209,7 +224,7 @@ The constants are also available as `SSLParams.ANY`, `SSLParams.TLS_V1_2` and so
 
 ## Configuration
 
-Options go in a `[DMC_SOCKETS]` section of `dmc_corona.cfg`:
+The [Sockets settings](#sockets-settings) can also go in a `[DMC_SOCKETS]` section of `dmc_corona.cfg`:
 
 | Option | Default | Description |
 |---|---|---|
@@ -221,7 +236,7 @@ Options go in a `[DMC_SOCKETS]` section of `dmc_corona.cfg`:
 
 - **`throttle` has no effect.** `Sockets.throttle` (`Sockets.OFF`, `LOW`, `MEDIUM`, `HIGH`) and `throttle_level` are meant to set how often sockets are checked, but they are checked every frame whatever the value.
 - **The timeout can't be changed.** Connecting and `'*l'` reads time out after 6 seconds. Reading `sock.timeout` clears the timeout by mistake, so don't read it.
-- **`'*l'` keeps a trailing `\r`** and only recognizes CRLF line endings, unlike LuaSocket's `'*l'`, which strips the line ending and also accepts a bare LF.
+- **`'*l'` keeps a trailing `\r`** and only recognizes CRLF line endings, unlike LuaSocket's `'*l'`, which strips the line ending and also accepts a bare LF. The lines from `receiveUntilNewline()` keep it too.
 - **TLS errors after connecting:** during a send, a TLS connection can ask to read first (`wantread`); this is treated as a failed connection rather than retried. It is rare in practice.
 - **UDP** is not implemented.
 
