@@ -14,7 +14,7 @@ local Sockets = require 'dmc_corona.dmc_sockets'
 | [Async TCP socket](#async-tcp-socket) | object | Callback-based socket: connect, send and receive without blocking (recommended) |
 | [TCP socket](#tcp-socket) | object | Event-based socket with a blocking connect and a read buffer |
 | [TLS settings](#tls-settings) | table | `ssl_params` for secure connections |
-| [Sockets settings](#sockets-settings) | properties | `check_reads`, `check_writes`, `throttle` |
+| [Sockets settings](#sockets-settings) | properties | `check_reads`, `check_writes`, [`throttle`](#throttle) |
 | [Configuration](#configuration) | file | The same settings in `dmc_corona.cfg` |
 | [Known issues](#known-issues) | | Behavior that differs from what the API suggests |
 
@@ -41,14 +41,25 @@ Properties of `Sockets`, shared by all sockets. They can also be set in [`dmc_co
 |---|---|---|
 | `Sockets.check_reads` | `true` | Watch sockets for incoming data. Setting it to `false` stops all reads |
 | `Sockets.check_writes` | `false` | Watch sockets for write readiness (not used yet) |
-| `Sockets.throttle` | `Sockets.MEDIUM` | Meant to set how often sockets are checked; see [known issues](#known-issues) |
+| `Sockets.throttle` | `Sockets.OFF` | How often sockets are checked for data; see [below](#throttle) |
+
+### throttle
+
+| Constant | Checks sockets |
+|---|---|
+| `Sockets.OFF` | every frame (the default) |
+| `Sockets.LOW` | at most every 33 ms, about 30 times a second |
+| `Sockets.MEDIUM` | at most every 66 ms, about 15 times a second |
+| `Sockets.HIGH` | at most once a second |
+
+A number sets the interval in milliseconds. Fewer checks mean less work per frame, but data waits longer to be noticed: with `MEDIUM`, a round trip takes about 66 ms instead of one frame. The setting is shared by all sockets.
 
 ### How Data Arrives
 
 LuaSocket, which dmc-sockets is built on, is non-blocking but has no callbacks. dmc-sockets therefore checks all of its sockets with `socket.select()` on every frame (`enterFrame`) and turns readable sockets into events. Two consequences:
 
 - The app never blocks waiting for data, and animations keep running.
-- Data is noticed at the next frame: a request/response round trip takes about one frame (33 ms at 30 fps, 16 ms at 60 fps). Raise the app's frame rate in `config.lua` for lower latency.
+- Data is noticed at the next frame: a request/response round trip takes about one frame (33 ms at 30 fps, 16 ms at 60 fps). Raise the app's frame rate in `config.lua` for lower latency, or set a [`throttle`](#throttle) for fewer checks.
 
 ## Async TCP Socket
 
@@ -108,7 +119,7 @@ Takes data from the socket's buffer and passes it to the callback as `event.data
 |---|---|
 | `'*a'` | everything buffered so far, possibly `''` |
 | a number `n` | exactly `n` bytes, if that many are buffered; otherwise the callback is not called |
-| `'*l'` | the next line (see [known issues](#known-issues)); waits for it to arrive, up to the socket's timeout (6 seconds), then calls back with `event.emsg = 'timeout'` |
+| `'*l'` | the next line, without its line ending (CRLF or LF); waits for it to arrive, up to the socket's [`timeout`](#timeout), then calls back with `event.emsg = 'timeout'` |
 
 ### receiveUntilNewline()
 
@@ -116,7 +127,7 @@ Takes data from the socket's buffer and passes it to the callback as `event.data
 sock:receiveUntilNewline( function( event ) ... end )
 ```
 
-Collects lines until an empty line, as at the end of HTTP headers, then calls back with `event.data`, a list of the lines (the last one is `''`; the others keep a trailing `\r`, see [known issues](#known-issues)). Waits up to the socket's timeout; on timeout, the lines read so far go back into the buffer and `event.emsg` is `'timeout'`.
+Collects lines until an empty line, as at the end of HTTP headers, then calls back with `event.data`, a list of the lines without their line endings (the last one is `''`). Headers can arrive over several reads. Waits up to the socket's [`timeout`](#timeout); on timeout, the lines read so far go back into the buffer and `event.emsg` is `'timeout'`.
 
 ### close()
 
@@ -125,6 +136,10 @@ Closes the connection and drops anything still waiting to be sent. `onConnect` i
 ### secure
 
 `true` to use TLS. Set it before `connect()`. Creating the socket with `ssl_params` also makes it secure; set `sock.secure = false` afterwards to connect without TLS. In Solar2D, TLS needs `plugin.openssl` in `build.settings`; outside Solar2D it uses luasec.
+
+### timeout
+
+Milliseconds to wait when connecting and for `'*l'` reads and `receiveUntilNewline()`. Defaults to 6000; set it on the socket (`sock.timeout = 2000`) or when creating it (`Sockets:create( Sockets.ATCP, { timeout=2000 } )`).
 
 ### ssl_params
 
@@ -177,7 +192,7 @@ Listen for `sock.EVENT`:
 |---|---|
 | `'*a'` | everything buffered, possibly `''` |
 | a number `n` | `n` bytes, or `nil` if fewer are buffered |
-| `'*l'` | the next line ending in CRLF (see [known issues](#known-issues)), or `nil` |
+| `'*l'` | the next line, without its line ending (CRLF or LF), or `nil` if no complete line is buffered |
 
 ### unreceive()
 
@@ -230,13 +245,10 @@ The [Sockets settings](#sockets-settings) can also go in a `[DMC_SOCKETS]` secti
 |---|---|---|
 | `check_reads` | `true` | Watch sockets for incoming data. Turning it off stops all reads |
 | `check_writes` | `false` | Watch sockets for write readiness (not used yet) |
-| `throttle_level` | `66` | See [known issues](#known-issues) |
+| `throttle_level` | `0` | Milliseconds between socket checks, see [`throttle`](#throttle) |
 
 ## Known Issues
 
-- **`throttle` has no effect.** `Sockets.throttle` (`Sockets.OFF`, `LOW`, `MEDIUM`, `HIGH`) and `throttle_level` are meant to set how often sockets are checked, but they are checked every frame whatever the value.
-- **The timeout can't be changed.** Connecting and `'*l'` reads time out after 6 seconds. Reading `sock.timeout` clears the timeout by mistake, so don't read it.
-- **`'*l'` keeps a trailing `\r`** and only recognizes CRLF line endings, unlike LuaSocket's `'*l'`, which strips the line ending and also accepts a bare LF. The lines from `receiveUntilNewline()` keep it too.
 - **TLS errors after connecting:** during a send, a TLS connection can ask to read first (`wantread`); this is treated as a failed connection rather than retried. It is rare in practice.
 - **UDP** is not implemented.
 

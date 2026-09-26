@@ -4,7 +4,19 @@ How dmc-sockets is tested, how to rebuild the libraries it bundles, and where it
 
 ## Testing
 
-dmc-sockets has no test suite of its own. It is exercised through [dmc-websockets](https://github.com/dmccuskey/dmc-websockets), which runs on it:
+Unit tests cover reading (line, count and read-all modes, `receiveUntilNewline()` with headers split across reads), `timeout` and `throttle`. They run in plain Lua 5.1, without Solar2D, and need `luasocket` and `dkjson`:
+
+```sh
+tests/run_unit.sh
+```
+
+Expected output ends with:
+
+```text
+  14 passed, 0 failed, 0 error(s), 0 skipped.
+```
+
+Network behavior is exercised through [dmc-websockets](https://github.com/dmccuskey/dmc-websockets), which runs on dmc-sockets:
 
 - the Autobahn|Testsuite, 301 cases including 16MB messages and 1000-message bursts, headless and in the Solar2D Simulator (see dmc-websockets' [compliance page](https://github.com/dmccuskey/dmc-websockets/blob/master/docs/compliance.md));
 - `wss://` echo checks against public servers, which cover TLS, SNI and the negotiated TLS version.
@@ -39,12 +51,9 @@ Changes go on a short-lived branch (`fix/...`, `feat/...`, `docs/...`) and reach
 
 These are ideas, not plans. Each needs discussion and a concrete use case before it is worked on; decided work goes in [GitHub issues](https://github.com/dmccuskey/dmc-sockets/issues).
 
-- **Make `throttle` work, or remove it:** `_createSocketCheckHandler()` ignores the interval, so sockets are checked every frame whatever the setting.
-- **Fix the `timeout` property:** it is written as a getter that clears the timeout; make it a real getter and setter, so connects and `'*l'` reads can wait longer or shorter than 6 seconds.
-- **Match LuaSocket's `'*l'`:** strip the trailing `\r`, and accept a bare LF as a line ending.
 - **Retry on TLS `wantread` during sends,** instead of failing the connection.
 - **Non-blocking TLS handshake:** step `dohandshake()` across frames like the TCP connect, so a slow handshake doesn't freeze the app.
 - **Report failed connects consistently:** today a TLS failure sets `isError` but leaves `status` as `CONNECTED`.
-- **Tests of its own:** unit tests for buffering and line reads, and a headless connect/send/receive test against a local server.
+- **Network tests of its own:** a headless connect/send/receive test against a local server, including TLS.
 - **Tidy the repository:** replace the leftover `main.lua` (it runs dmc-objects' tests) with something useful, e.g. the basic example.
 - **UDP sockets.**
