@@ -26,7 +26,7 @@ local Sockets = require 'dmc_corona.dmc_sockets'
 --== Setup, Constants
 
 
-local host, port = 'docs.davidmccuskey.com', 80
+local host, port = 'example.com', 80
 local sock
 
 
