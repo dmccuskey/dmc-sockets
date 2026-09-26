@@ -13,13 +13,12 @@
 
 ### Changed
 
-- The default `throttle` is `OFF` (every frame; it was nominally `MEDIUM`), so apps behave as before now that the setting works.
-
+- The default `throttle` is `OFF` (every frame; it was nominally `MEDIUM`), so apps behave as before now that the setting works. See [ADR 001](docs/decisions/001-throttle-default-off.md).
 - `ssl_params.protocol` defaults to `'any'` (was `'tlsv1'`) and accepts `'tlsv1_1'`, `'tlsv1_2'` and `'tlsv1_3'`.
 - Outside Solar2D, TLS uses plain luasec when the Solar2D plugins aren't available.
 - The bundled libraries are updated.
 
 ### Added
 
-- Documentation: Quick Start, API reference with known issues, development guide.
+- Documentation: Quick Start, API reference with known issues, development guide, decision record for the `throttle` default.
 - Unit tests (`tests/run_unit.sh`).
