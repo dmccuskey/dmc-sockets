@@ -183,3 +183,74 @@ function test_throttleSpacesChecks()
 	for i = 1, 12 do frames[i] = i*17 end
 	assert_equal( 3, countChecks( Sockets.MEDIUM, frames ) )
 end
+
+
+
+--====================================================================--
+--== send() and TLS
+
+
+-- a stand-in for a raw socket: send() returns the next queued result
+local function fakeSocket( results )
+	local fake = { closed=false, sent=0 }
+	function fake:send( data, i )
+		local r = table.remove( results, 1 ) or { #data }
+		return r[1], r[2], r[3]
+	end
+	function fake:close() self.closed = true end
+	return fake
+end
+
+function test_sendRetriesOnWantread()
+	local sock = Sockets:create( Sockets.ATCP )
+	-- TLS wants to read first, then the rest goes out
+	sock._socket = fakeSocket( { { nil, 'wantread', 3 }, { 10 } } )
+	local evt
+	sock:send( '0123456789', function( e ) evt = e end )
+	assert_nil( evt, "no callback while waiting" )
+	assert_equal( 1, #sock._write_queue )
+	assert_equal( 4, sock._write_queue[1].index )
+
+	sock:_processWriteQueue()
+	assert_table( evt )
+	assert_nil( evt.isError )
+	assert_equal( 0, #sock._write_queue )
+	sock._socket = nil
+end
+
+function test_sendFailsOnError()
+	local sock = Sockets:create( Sockets.ATCP )
+	sock._socket = fakeSocket( { { nil, 'closed', 0 } } )
+	local evt
+	sock:send( 'data', function( e ) evt = e end )
+	assert_true( evt.isError )
+	assert_equal( 'closed', evt.emsg )
+	sock._socket = nil
+end
+
+function test_failedTLSSetupIsNotConnected()
+	local sock = Sockets:create( Sockets.ATCP )
+	local fake = fakeSocket( {} )
+	sock._socket = fake
+	sock._status = sock.CONNECTED
+	local got
+	sock._onConnect = function( e ) got = e end
+
+	sock:_failSecureConnect( {}, 'handshake failed' )
+
+	assert_true( fake.closed )
+	assert_true( got.isError )
+	assert_equal( sock.NOT_CONNECTED, got.status )
+	assert_equal( 'handshake failed', got.emsg )
+	-- no socket left, so the next connect() makes a new one
+	assert_nil( sock._socket )
+	assert_equal( sock.NO_SOCKET, sock._status )
+end
+
+function test_closeWithoutSocket()
+	local sock = Sockets:create( Sockets.ATCP )
+	sock._socket = fakeSocket( {} )
+	sock:_failSecureConnect( {}, 'handshake failed' )
+	sock:close() -- no error
+	assert_equal( sock.NO_SOCKET, sock._status )
+end

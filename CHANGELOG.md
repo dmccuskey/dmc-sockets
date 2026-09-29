@@ -10,6 +10,8 @@
 - `receive( '*l' )` returned lines with a trailing `\r` and only recognized CRLF. Lines now come without their line ending, and a bare LF also ends a line, as in LuaSocket. The same goes for `receiveUntilNewline()`.
 - `receiveUntilNewline()` could corrupt or repeat header lines when the headers arrived over several reads.
 - Secure connections failed against current servers: `setoption()` was called on the TLS-wrapped socket, which has no such method; no SNI was sent, so servers on shared hosts and CDNs refused the handshake; and TLS 1.0 was forced. Found through [dmc-websockets #6](https://github.com/dmccuskey/dmc-websockets/issues/6).
+- A send on a secure connection failed the connection when TLS needed to read first (`wantread`, e.g. during a renegotiation). It is now retried on the next frame, like a full send buffer.
+- A failed TLS setup (wrap or handshake) left the socket open and marked `CONNECTED`, so connecting again answered "already connected". The socket is now closed, `onConnect` gets `status` `NOT_CONNECTED` with `isError`, and the next `connect()` starts over. `close()` after that no longer errors.
 
 ### Changed
 
