@@ -94,7 +94,7 @@ Starts connecting and returns right away. If [`secure`](#secure) is `true`, the 
 |---|---|
 | `event.type` | `sock.CONNECT` |
 | `event.status` | `sock.CONNECTED`, `sock.NOT_CONNECTED` (failed or timed out) or `sock.CLOSED` |
-| `event.isError` | `true` if the TLS setup failed (check this first: `status` can still be `CONNECTED`) |
+| `event.isError` | `true` if the TLS setup failed; `status` is then `NOT_CONNECTED` and the socket is closed |
 | `event.emsg` | error message, e.g. `'timeout'` |
 
 `onData( event )` is called when received data is waiting to be read. `event.bytes` is how many bytes are buffered. Read them with [`receive()`](#receive). The data from one response can arrive over several `onData` calls.
@@ -249,7 +249,6 @@ The [Sockets settings](#sockets-settings) can also go in a `[DMC_SOCKETS]` secti
 
 ## Known Issues
 
-- **TLS errors after connecting:** during a send, a TLS connection can ask to read first (`wantread`); this is treated as a failed connection rather than retried. It is rare in practice.
 - **UDP** is not implemented.
 
 Fixes are listed under [Possible Future Changes](development.md#possible-future-changes).

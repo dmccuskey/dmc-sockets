@@ -57,9 +57,7 @@ Changes go on a short-lived branch (`fix/...`, `feat/...`, `docs/...`) and reach
 
 These are ideas, not plans. Each needs discussion and a concrete use case before it is worked on; decided work goes in [GitHub issues](https://github.com/dmccuskey/dmc-sockets/issues).
 
-- **Retry on TLS `wantread` during sends,** instead of failing the connection.
 - **Non-blocking TLS handshake:** step `dohandshake()` across frames like the TCP connect, so a slow handshake doesn't freeze the app.
-- **Report failed connects consistently:** today a TLS failure sets `isError` but leaves `status` as `CONNECTED`.
 - **Network tests of its own:** a headless connect/send/receive test against a local server, including TLS.
 - **Tidy the repository:** replace the leftover `main.lua` (it runs dmc-objects' tests) with something useful, e.g. the basic example.
 - **UDP sockets.**
