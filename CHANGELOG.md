@@ -12,6 +12,7 @@
 - Secure connections failed against current servers: `setoption()` was called on the TLS-wrapped socket, which has no such method; no SNI was sent, so servers on shared hosts and CDNs refused the handshake; and TLS 1.0 was forced. Found through [dmc-websockets #6](https://github.com/dmccuskey/dmc-websockets/issues/6).
 - A send on a secure connection failed the connection when TLS needed to read first (`wantread`, e.g. during a renegotiation). It is now retried on the next frame, like a full send buffer.
 - A failed TLS setup (wrap or handshake) left the socket open and marked `CONNECTED`, so connecting again answered "already connected". The socket is now closed, `onConnect` gets `status` `NOT_CONNECTED` with `isError`, and the next `connect()` starts over. `close()` after that no longer errors.
+- The global `_extend` is no longer created: the module uses lua_utils' `extend()` instead of its own copy.
 
 ### Changed
 
