@@ -34,7 +34,7 @@ sock:connect( 'example.com', 80, {
 
 ## Quick Start
 
-This makes an HTTP request from a Solar2D app and prints the response's status line, in about 10 minutes, in the Solar2D Simulator on macOS or Windows.
+The following code will get you up and running in about 10 minutes in the Solar2D Simulator on macOS or Windows. It makes an app that sends an HTTP request and prints the response's status line.
 
 Prerequisites: the [Solar2D](https://solar2d.com/) Simulator and a copy of this repository (`git clone https://github.com/dmccuskey/dmc-sockets.git`, or download the ZIP from GitHub).
 
