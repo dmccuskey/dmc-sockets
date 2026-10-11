@@ -12,10 +12,14 @@
 - Secure connections failed against current servers: `setoption()` was called on the TLS-wrapped socket, which has no such method; no SNI was sent, so servers on shared hosts and CDNs refused the handshake; and TLS 1.0 was forced. Found through [dmc-websockets #6](https://github.com/dmccuskey/dmc-websockets/issues/6).
 - A send on a secure connection failed the connection when TLS needed to read first (`wantread`, e.g. during a renegotiation). It is now retried on the next frame, like a full send buffer.
 - A failed TLS setup (wrap or handshake) left the socket open and marked `CONNECTED`, so connecting again answered "already connected". The socket is now closed, `onConnect` gets `status` `NOT_CONNECTED` with `isError`, and the next `connect()` starts over. `close()` after that no longer errors.
+- A read waiting behind another read, or behind the connect, was dropped and never called back: a finished `connect()` or `receiveUntilNewline()` took the next one out of the queue with it. That included a read started in `onConnect`, or in another read's callback, before its data arrived. ([#9](https://github.com/dmccuskey/dmc-sockets/issues/9))
+- `receive( '*l' )` waiting for its line only timed out if other data arrived; it now waits in the queue like `receiveUntilNewline()`.
+- A refused connection, or a host that isn't found, waited the whole `timeout` and was reported as `'timeout'`. `onConnect` now gets LuaSocket's message (`'connection refused'`) right away. ([dmc-netstream #1](https://github.com/dmccuskey/dmc-netstream/issues/1))
 - The global `_extend` is no longer created: the module uses lua_utils' `extend()` instead of its own copy.
 
 ### Changed
 
+- `onConnect` gets `isError` for every failed connection, a timeout included (before, only for a failed TLS setup).
 - The default `throttle` is `OFF` (every frame; it was nominally `MEDIUM`), so apps behave as before now that the setting works. See [ADR 001](docs/decisions/001-throttle-default-off.md).
 - `ssl_params.protocol` defaults to `'any'` (was `'tlsv1'`) and accepts `'tlsv1_1'`, `'tlsv1_2'` and `'tlsv1_3'`.
 - Outside Solar2D, TLS uses plain luasec when the Solar2D plugins aren't available.

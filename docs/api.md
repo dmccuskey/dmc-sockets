@@ -94,8 +94,8 @@ Starts connecting and returns right away. If [`secure`](#secure) is `true`, the 
 |---|---|
 | `event.type` | `sock.CONNECT` |
 | `event.status` | `sock.CONNECTED`, `sock.NOT_CONNECTED` (failed or timed out) or `sock.CLOSED` |
-| `event.isError` | `true` if the TLS setup failed; `status` is then `NOT_CONNECTED` and the socket is closed |
-| `event.emsg` | error message, e.g. `'timeout'` |
+| `event.isError` | `true` if the connection failed: it was refused, the host wasn't found, nothing answered within the socket's [`timeout`](#timeout), or the TLS setup failed (the socket is then closed). `status` is `NOT_CONNECTED` |
+| `event.emsg` | error message: `'connection refused'` and a host that isn't found are reported right away, with LuaSocket's message; `'timeout'` after the socket's `timeout` |
 
 `onData( event )` is called when received data is waiting to be read. `event.bytes` is how many bytes are buffered. Read them with [`receive()`](#receive). The data from one response can arrive over several `onData` calls.
 

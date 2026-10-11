@@ -4,7 +4,7 @@ How dmc-sockets is tested, how to rebuild the libraries it bundles, the decision
 
 ## Testing
 
-Unit tests cover reading (line, count and read-all modes, `receiveUntilNewline()` with headers split across reads), `timeout` and `throttle`. They run in plain Lua 5.1, without Solar2D, and need `luasocket` and `dkjson`:
+Unit tests cover reading (line, count and read-all modes, `receiveUntilNewline()` with headers split across reads), several reads and a connect waiting in turn, a refused connection, `timeout` and `throttle`. They run in plain Lua 5.1, without Solar2D, and need `luasocket` and `dkjson`:
 
 ```sh
 tests/run_unit.sh
@@ -13,7 +13,7 @@ tests/run_unit.sh
 Expected output ends with:
 
 ```text
-  14 passed, 0 failed, 0 error(s), 0 skipped.
+  27 passed, 0 failed, 0 error(s), 0 skipped.
 ```
 
 Network behavior is exercised through [dmc-websockets](https://github.com/dmccuskey/dmc-websockets), which runs on dmc-sockets:
