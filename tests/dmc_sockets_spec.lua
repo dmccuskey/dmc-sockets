@@ -119,6 +119,192 @@ end
 
 
 --====================================================================--
+--== the queue of waiting reads and connects
+
+
+function test_twoWaitingReadsBothCallBack()
+	local sock = atcpWithBuffer( '' )
+	local first, second
+	sock:receiveUntilNewline( function( e ) first = e.data end )
+	sock:receiveUntilNewline( function( e ) second = e.data end )
+	assert_equal( 2, #sock._coroutine_queue )
+
+	sock._buffer = 'A: 1\r\n\r\nB: 2\r\n\r\n'
+	sock:_processCoroutineQueue()
+	assert_equal( 'A: 1', first[1] )
+	assert_nil( second )
+	assert_equal( 1, #sock._coroutine_queue )
+
+	sock:_processCoroutineQueue()
+	assert_equal( 'B: 2', second[1] )
+	assert_equal( 0, #sock._coroutine_queue )
+	assert_equal( '', sock._buffer )
+end
+
+function test_readQueuedFromACallbackCallsBack()
+	local sock = atcpWithBuffer( '' )
+	local first, second
+	sock:receiveUntilNewline( function( e )
+		first = e.data
+		sock:receiveUntilNewline( function( e2 ) second = e2.data end )
+	end )
+
+	sock._buffer = 'A: 1\r\n\r\n'
+	sock:_processCoroutineQueue()
+	assert_equal( 'A: 1', first[1] )
+	-- the first is done and gone, the second waits
+	assert_equal( 1, #sock._coroutine_queue )
+
+	sock._buffer = 'B: 2\r\n\r\n'
+	sock:_processCoroutineQueue()
+	assert_equal( 'B: 2', second[1] )
+	assert_equal( 0, #sock._coroutine_queue )
+end
+
+function test_lineReadWaitsInTheQueue()
+	local sock = atcpWithBuffer( 'par' )
+	local line, later
+	sock:receive( '*l', function( e ) line = e.data end )
+	sock:receiveUntilNewline( function( e ) later = e.data end )
+	assert_nil( line )
+	assert_equal( 2, #sock._coroutine_queue )
+	-- the enterFrame listener runs the queue, so the read can time out
+	assert_true( sock._coroutine_queue_active )
+
+	sock._buffer = sock._buffer .. 'tial\r\nA: 1\r\n\r\n'
+	sock:_processCoroutineQueue()
+	assert_equal( 'partial', line )
+	sock:_processCoroutineQueue()
+	assert_equal( 'A: 1', later[1] )
+	assert_equal( 0, #sock._coroutine_queue )
+	assert_false( sock._coroutine_queue_active )
+end
+
+function test_queueRunFromInsideACallbackIsLeftAlone()
+	local sock = atcpWithBuffer( '' )
+	local calls = 0
+	sock:receiveUntilNewline( function( e )
+		calls = calls + 1
+		sock:_processCoroutineQueue() -- as a read in the callback does
+	end )
+	sock._buffer = 'A: 1\r\n\r\n'
+	sock:_processCoroutineQueue()
+	assert_equal( 1, calls )
+	assert_equal( 0, #sock._coroutine_queue )
+end
+
+function test_timedOutReadLeavesTheNextOne()
+	local sock = atcpWithBuffer( '' )
+	local clock = 0
+	local getTimer = system.getTimer
+	system.getTimer = function() return clock end
+	local first, second
+	sock:receiveUntilNewline( function( e ) first = e end )
+	sock:receiveUntilNewline( function( e ) second = e end )
+
+	sock:_processCoroutineQueue() -- the first starts waiting
+	clock = sock.timeout + 1
+	sock:_processCoroutineQueue()
+	assert_equal( 'timeout', first.emsg )
+	assert_nil( second )
+	assert_equal( 1, #sock._coroutine_queue )
+
+	sock._buffer = 'B: 2\r\n\r\n'
+	sock:_processCoroutineQueue()
+	system.getTimer = getTimer
+	assert_equal( 'B: 2', second.data[1] )
+end
+
+
+
+--====================================================================--
+--== connect()
+
+
+-- connect with a stand-in for the raw socket: its connect() returns
+-- the next queued result, then the last one again
+local function connectWith( results, onConnect )
+	local sock = Sockets:create( Sockets.ATCP )
+	local fake = { calls=0 }
+	function fake:connect()
+		self.calls = self.calls + 1
+		local r = results[ math.min( self.calls, #results ) ]
+		return r[1], r[2]
+	end
+	function fake:close() end
+	sock._createSocket = function( self ) self._socket = fake end
+	sock._master = { _connect=function() end, _disconnect=function() end }
+	sock:connect( 'localhost', 80, { onConnect=onConnect } )
+	return sock, fake
+end
+
+function test_connectCallsBackWhenConnected()
+	local got
+	local sock = connectWith(
+		{ { nil, 'timeout' }, { nil, 'Operation already in progress' }, { nil, 'already connected' } },
+		function( e ) got = e end )
+	sock:_processCoroutineQueue()
+	sock:_processCoroutineQueue()
+	assert_nil( got )
+	sock:_processCoroutineQueue()
+	assert_equal( sock.CONNECTED, got.status )
+	assert_nil( got.isError )
+	assert_equal( 0, #sock._coroutine_queue )
+end
+
+function test_refusedConnectionFailsAtOnce()
+	local got
+	local sock, fake = connectWith(
+		{ { nil, 'timeout' }, { nil, 'connection refused' } },
+		function( e ) got = e end )
+	sock:_processCoroutineQueue()
+	assert_nil( got )
+	sock:_processCoroutineQueue()
+	assert_equal( 'connection refused', got.emsg )
+	assert_true( got.isError )
+	assert_equal( sock.NOT_CONNECTED, got.status )
+	assert_equal( 2, fake.calls )
+	assert_equal( 0, #sock._coroutine_queue )
+end
+
+function test_unansweredConnectionTimesOut()
+	local clock = 0
+	local getTimer = system.getTimer
+	system.getTimer = function() return clock end
+	local got
+	local sock = connectWith(
+		{ { nil, 'timeout' }, { nil, 'Operation already in progress' } },
+		function( e ) got = e end )
+	sock:_processCoroutineQueue()
+	sock:_processCoroutineQueue()
+	assert_nil( got )
+	clock = sock.timeout + 1
+	sock:_processCoroutineQueue()
+	system.getTimer = getTimer
+	assert_equal( 'timeout', got.emsg )
+	assert_true( got.isError )
+	assert_equal( sock.NOT_CONNECTED, got.status )
+end
+
+function test_readQueuedInOnConnectCallsBack()
+	local lines
+	local sock
+	sock = connectWith( { { nil, 'already connected' } }, function( e )
+		sock:receiveUntilNewline( function( e2 ) lines = e2.data end )
+	end )
+	sock._buffer = ''
+	sock:_processCoroutineQueue()
+	assert_equal( sock.CONNECTED, sock.status )
+	assert_equal( 1, #sock._coroutine_queue )
+
+	sock._buffer = '220 hello\r\n\r\n'
+	sock:_processCoroutineQueue()
+	assert_equal( '220 hello', lines[1] )
+end
+
+
+
+--====================================================================--
 --== timeout
 
 
